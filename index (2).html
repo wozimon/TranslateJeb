@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Matrix Cipher Translator</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: rgba(0, 20, 0, 0.8);
+            border: 1px solid #0f0;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            animation: glitch 3s infinite;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            background: #000;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            resize: none;
+        }
+
+        .decrypt-btn {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 15px;
+            background: none;
+            color: #0f0;
+            border: 2px solid #0f0;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .decrypt-btn:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .decrypt-btn::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0, 255, 0, 0.5);
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% {
+                transform: translate(-100%, -100%);
+            }
+            100% {
+                transform: translate(400px, 400px);
+            }
+        }
+
+        @keyframes glitch {
+            0% {
+                text-shadow: 2px 2px #0f0, -2px -2px #00f;
+            }
+            25% {
+                text-shadow: -2px 2px #0f0, 2px -2px #00f;
+            }
+            50% {
+                text-shadow: 2px -2px #0f0, -2px 2px #00f;
+            }
+            75% {
+                text-shadow: -2px -2px #0f0, 2px 2px #00f;
+            }
+            100% {
+                text-shadow: 2px 2px #0f0, -2px -2px #00f;
+            }
+        }
+
+        #ascii-animation {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: #0f0;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <canvas class="matrix-bg" id="matrix"></canvas>
+    
+    <div class="container">
+        <h1>Дешифратор</h1>
+        <textarea placeholder="Введите текст для расшифровки..."></textarea>
+        <button class="decrypt-btn">Распознать</button>
+    </div>
+
+    <div id="ascii-animation"></div>
+
+    <script>
+        // Matrix rain effect
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = new Array(Math.floor(columns)).fill(1);
+
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#0f0';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        // ASCII animation
+        const asciiFrames = [
+            "╔═══╗     ╔╗  ╔═══╗╔═══╗╔═══╗",
+            "║╔═╗║     ║║  ║╔═╗║║╔═╗║║╔═╗║",
+            "║║ ║║╔══╗║║╔╗║║ ╚╝║║ ║║║╚═╝║",
+            "║╚═╝║╚══╝║╚╝╝║║ ╔╗║║ ║║║╔╗╔╝",
+            "║╔═╗║    ╚╗╔╗║╚═╝║║╚═╝║║║║╚╗",
+            "╚╝ ╚╝     ╚╝╚╝╚═══╝╚═══╝╚╝╚═╝"
+        ];
+
+        let currentFrame = 0;
+        const asciiElement = document.getElementById('ascii-animation');
+
+        function updateAscii() {
+            asciiElement.innerHTML = `<pre>${asciiFrames[currentFrame]}</pre>`;
+            currentFrame = (currentFrame + 1) % asciiFrames.length;
+        }
+
+        // Button effect
+        const button = document.querySelector('.decrypt-btn');
+        button.addEventListener('click', () => {
+            button.style.animation = 'none';
+            button.offsetHeight;
+            button.style.animation = '';
+        });
+
+        // Animation loops
+        setInterval(draw, 33);
+        setInterval(updateAscii, 500);
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
