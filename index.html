@@ -166,7 +166,6 @@
             <textarea placeholder="Введите текст для расшифровки..."></textarea>
             <button class="decrypt-btn">Распознать</button>
             <div class="terminal">
-                <!-- Terminal output will be inserted here -->
             </div>
         </div>
     </div>
@@ -174,7 +173,6 @@
     <div id="ascii-animation"></div>
 
     <script>
-        // Matrix rain effect
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
 
@@ -203,8 +201,6 @@
                 drops[i]++;
             }
         }
-
-        // Terminal simulation
         function addTerminalLine(text, delay = 50) {
             return new Promise(resolve => {
                 const terminal = document.querySelector('.terminal');
@@ -225,11 +221,8 @@
                 }, delay);
             });
         }
-
-        // Функция для генерации альтернативных значений с использованием Gemini API
         async function generateAlternatives(word) {
-            // ВСТАВЬТЕ ВАШ API_KEY ЗДЕСЬ
-            const API_KEY = "AIzaSyAGedcl3pM3c19jKNP2oPhcHM5hA_GV-TQ";
+            const API_KEY = "---";
             const MODEL_NAME = "gemini-1.5-flash";
             const URL = `https://generativelanguage.googleapis.com/v1/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
             
@@ -272,16 +265,13 @@
                 }
                 
                 const data = await response.json();
-                
-                // Обработка ответа от API
+
                 if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
                     const alternativesText = data.candidates[0].content.parts[0].text;
-                    // Фильтруем пустые строки и убираем лишние строки из примера
                     const alternatives = alternativesText
                         .split('\n')
                         .filter(line => line.trim() && !line.includes('Формат вывода:') && !line.includes('Слово:'));
-                    
-                    // Возвращаем только последние 3 строки (актуальные значения)
+
                     return alternatives.slice(-3);
                 } else {
                     console.error("Ошибка в формате ответа:", data);
@@ -297,7 +287,6 @@
             }
         }
 
-        // Simulated AI decryption process
         async function simulateDecryption(input) {
             const terminal = document.querySelector('.terminal');
             terminal.style.display = 'block';
@@ -328,17 +317,14 @@
             await addTerminalLine('[СИСТЕМА] Процесс дешифровки завершен.');
         }
 
-        // Button handler
         const button = document.querySelector('.decrypt-btn');
         button.addEventListener('click', () => {
             const input = document.querySelector('textarea').value;
             simulateDecryption(input);
         });
 
-        // Animation loops
         setInterval(draw, 33);
 
-        // Resize handler
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
